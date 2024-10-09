@@ -1,0 +1,24 @@
+{
+  "name": "backend_server",
+  "version": "0.0.1",
+  "description": "\"Backend server for processing the Sensor data transmitted from Raspberry Pi\"\"",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "author": "Team 5",
+  "license": "No License",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.9.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "stoppable": "^1.1.0",
+    "ws": "^8.18.0"
+  }
+}
