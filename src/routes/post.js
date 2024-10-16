@@ -23,7 +23,7 @@ module.exports = (req, res) => {
   }
 
   const data = {
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toUTCString(),
     temperature,
     humidity,
     moisture
