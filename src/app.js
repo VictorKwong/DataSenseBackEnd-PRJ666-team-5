@@ -9,7 +9,12 @@ app.use(passport.initialize());
 // Create an express app instance we can use to attach middleware and HTTP routes
 
 // Use CORS middleware so we can make requests across origins
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: "https://prj666deploy-9xd1.vercel.app",
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true,
+}));
 
 // Middleware to parse JSON bodies
 app.use(express.json());
