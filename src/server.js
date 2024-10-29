@@ -4,7 +4,9 @@ const { wss } = require("./websocket");
 const userService = require("./services/userService");
 const { exit } = require("process");
 
-const port = parseInt(process.env.PORT || "8080", 10);
+// const port = parseInt(process.env.PORT || "8080", 10);
+// NEXT_PUBLIC_API_URL = https://datasensebackend-prj666-team-5.onrender.com
+const port = parseInt(process.env.NEXT_PUBLIC_API_URL || "8080", 10);
 
 let server;
 
