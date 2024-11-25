@@ -1,5 +1,3 @@
-//routes/uploadRouter.js
-//upload multer
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -11,10 +9,10 @@ const router = express.Router();
 // Set up multer storage options for the uploaded file
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Ensure the 'uploads' folder exists, if not create it
-    const uploadPath = path.join(__dirname, '../uploads');
+    // Set the upload path to './src/data'
+    const uploadPath = path.join(__dirname, '../data');
     if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath);
+      fs.mkdirSync(uploadPath, { recursive: true }); // Ensure the directory is created
     }
     cb(null, uploadPath); // Specify the folder where the file will be saved
   },
@@ -33,7 +31,7 @@ router.post('/upload-csv', upload.single('csvfile'), (req, res) => {
   }
 
   // Process the uploaded CSV file (parse and handle it)
-  const filePath = path.join(__dirname, '../uploads', req.file.filename);
+  const filePath = path.join(__dirname, '../data', req.file.filename);
 
   const rows = [];
   fs.createReadStream(filePath)
@@ -46,7 +44,8 @@ router.post('/upload-csv', upload.single('csvfile'), (req, res) => {
       res.status(200).json({ message: 'CSV file uploaded and processed.', data: rows });
     })
     .on('error', (err) => {
-      res.status(500).json({ message: 'Error reading the CSV file', error: err });
+      console.error('Error processing the CSV file:', err);
+      res.status(500).json({ message: 'Error reading the CSV file', error: err.message });
     });
 });
 
