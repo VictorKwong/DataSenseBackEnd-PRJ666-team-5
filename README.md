@@ -2,3 +2,4 @@
 - add uploadRouter.js
 - update retrieve.py and uploadCSV.py
 - npm install multer
+- npm install csv-parser
