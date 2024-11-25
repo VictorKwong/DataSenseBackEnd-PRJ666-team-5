@@ -7,3 +7,4 @@
 ## 25Nov24
 - npm install watchdog requests
 - npm install dovenv
+- npm install google-auth-library
