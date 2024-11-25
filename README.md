@@ -6,3 +6,4 @@
 
 ## 25Nov24
 - npm install watchdog requests
+- npm install dovenv
