@@ -1,3 +1,5 @@
+//routes/index.js
+
 const express = require("express");
 
 const router = express.Router();
@@ -16,6 +18,9 @@ router.use("/users", require("./usersRouter"));
 // Link routes to route handlers
 router.post("/sensor-data", require("./post"));
 router.get("/sensor-data", require("./get"));
+
+// Import your new upload route
+router.use('/upload', require('./uploadRouter'));
 
 // Export the router
 module.exports = router;
