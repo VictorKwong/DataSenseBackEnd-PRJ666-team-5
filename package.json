@@ -20,7 +20,9 @@
     "next": "^14.2.15",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "requests": "^0.3.0",
     "stoppable": "^1.1.0",
+    "watchdog": "^0.8.17",
     "ws": "^8.18.0"
   }
 }

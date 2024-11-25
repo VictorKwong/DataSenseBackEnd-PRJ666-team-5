@@ -3,3 +3,6 @@
 - update retrieve.py and uploadCSV.py
 - npm install multer
 - npm install csv-parser
+
+## 25Nov24
+- npm install watchdog requests

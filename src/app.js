@@ -10,11 +10,25 @@ app.use(passport.initialize());
 
 // Use CORS middleware so we can make requests across origins
 // app.use(cors());
-app.use(cors({
-  origin: "https://prj666deploy-9xd1.vercel.app",
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true,
-}));
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://prj666deploy-9xd1.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (allowedOrigins.includes(origin) || !origin) {
+        callback(null, true); // Allow the request if origin is in allowedOrigins or if there's no origin (for non-browser clients)
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 // Middleware to parse JSON bodies
 app.use(express.json());
