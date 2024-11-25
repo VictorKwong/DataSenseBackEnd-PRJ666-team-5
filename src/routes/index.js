@@ -20,7 +20,7 @@ router.post("/sensor-data", require("./post"));
 router.get("/sensor-data", require("./get"));
 
 // Import your new upload route
-router.post("/upload/sensor-data", require("./sensorDataRouter"));
+router.post("/upload/sensor-data", require("./uploadRouter"));
 
 // Export the router
 module.exports = router;
