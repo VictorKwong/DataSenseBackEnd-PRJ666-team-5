@@ -8,3 +8,4 @@
 - npm install watchdog requests
 - npm install dovenv
 - npm install google-auth-library
+- pip install pymongo
