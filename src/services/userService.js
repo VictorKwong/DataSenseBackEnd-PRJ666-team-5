@@ -20,6 +20,30 @@ const connect = async () => {
     .createIndex({ email: 1 }, { unique: true });
 };
 
+// login with google account update
+async function deleteUser(email) {
+  const res = await client
+    .db("prj666_datasense")
+    .collection("users")
+    .deleteOne({ email });
+  console.log("deleted", res);
+  return res;
+}
+
+async function fetchOrCreateForOauth(email, oauthProvider) {
+  // validated google jwt
+  const user = await client
+    .db("prj666_datasense")
+    .collection("users")
+    .findOneAndUpdate(
+      { email: email },
+      { $set: { email: email, oauthProvider: oauthProvider } },
+      { upsert: true, returnDocument: "after" }
+    );
+  console.log("upserted user", user);
+  return user;
+}
+
 async function userCreate(email, password) {
   const hash = await bcrypt.hash(password, 10);
   await client
@@ -35,6 +59,7 @@ async function findByEmailPassword(email, plainPassword) {
     .db("prj666_datasense")
     .collection("users")
     .findOne({ email: email });
+
   if (!user) {
     throw "User is not found";
   }
@@ -45,53 +70,55 @@ async function findByEmailPassword(email, plainPassword) {
   return user;
 }
 
+async function setPassword(id, password, newPassword) {
+  const userFindById = await client
+    .db("prj666_datasense")
+    .collection("users")
+    .findOne({ _id: new ObjectId(id) });
+  if (!userFindById) {
+    throw "User not found";
+  }
+
+  if (!bcrypt.compareSync(password, userFindById.password)) {
+    throw "Wrong current password.";
+  }
+
+  const hash = await bcrypt.hash(newPassword, 10);
+  const user = await client
+    .db("prj666_datasense")
+    .collection("users")
+    .findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { password: hash } },
+      { returnDocument: "after", upsert: true }
+    );
+  if (user) {
+    delete user.password;
+  }
+  return user;
+}
+
+async function updateInfo(id, username, contact) {
+  const user = await client
+    .db("prj666_datasense")
+    .collection("users")
+    .findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { username: username, contact: contact } },
+      { returnDocument: "after", upsert: true }
+    );
+  if (user) {
+    delete user.password;
+  }
+  return user;
+}
+
 module.exports = {
   connect,
   userCreate,
   findByEmailPassword,
+  fetchOrCreateForOauth,
+  deleteUser,
+  setPassword,
+  updateInfo,
 };
-
-// connect mongodb
-// if success, resolve
-// otherwise, reject
-
-//   const client2 = await client.connect();
-//   console.log("client2", client2);
-// get
-//   const user = await client2
-//     .db("datasense")
-//     .collection("users")
-//     .findOne({ _id: new ObjectId("66ff63ecc3499688729103af") });
-// .findOne({ email: "test@email.com" });
-
-// create
-//   await client2
-//     .db("datasense")
-//     .collection("users")
-//     .insertOne({ email: "test-insert@gmail.com", password: "new-pass-hash" })
-//     .catch(console.error)
-//     .then((res) => {
-//       console.log("insert worked", res);
-//     });
-
-// update
-
-//   const updateResult = await client
-//     .db("datasense")
-//     .collection("users")
-//     .updateOne(
-//       {
-//         email: "test-insert@gmail.com",
-//       },
-//       { $set: { password: "new-pass-hash-updated" } }
-//     );
-//   console.log(updateResult);
-//   return Promise.resolve();
-//   await client2
-//     .db("datasense")
-//     .collection("users")
-//     .insertOne({ email: "test-insert@gmail.com", password: "new-pass-hash" })
-//     .catch(console.error)
-//     .then((res) => {
-//       console.log("insert worked", res);
-//     });

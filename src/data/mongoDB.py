@@ -15,7 +15,7 @@ LOCAL_CSV_FILE = "./src/data/sensor_data.csv"
 last_uploaded_line = 0
 
 # Email for processing (could be extracted from CSV or other sources)
-USER_EMAIL = "test123@abc.com"  # Update this to the email you want to use
+USER_EMAIL = "test999@gmail.com"  # Update this to the email you want to use
 
 # Set up MongoDB client
 client = MongoClient(MONGO_URI)
