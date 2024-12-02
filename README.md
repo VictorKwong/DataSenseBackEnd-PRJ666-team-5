@@ -15,6 +15,7 @@
 - Require Wifi Hotspot (maximize compatibility - same name and password)
 - use Thonny run wifi_local_dht11_moisture.py from Rpi to .csv
 - .csv any updates connection to MongoDB
+- update schema from "time" to "timestamp"
 
 ## 01Dec24
 - getcsv.js [get csv file]

@@ -15,7 +15,7 @@ LOCAL_CSV_FILE = "./src/data/sensor_data.csv"
 last_uploaded_line = 0
 
 # Email for processing (could be extracted from CSV or other sources)
-USER_EMAIL = "test999@gmail.com"  # Update this to the email you want to use
+USER_EMAIL = "test123@abc.com"  # Update this to the email you want to use
 
 # Set up MongoDB client
 client = MongoClient(MONGO_URI)
@@ -33,7 +33,7 @@ def update_history(existing_doc, new_data):
     
     # Add the new data to the history (prepend to keep it at the start)
     history.insert(0, {
-        "time": new_data["time"],
+        "timestamp": new_data["timestamp"],
         "temperature": new_data["temperature"],
         "humidity": new_data["humidity"],
         "moisture": new_data["moisture"],
@@ -61,10 +61,10 @@ def insert_or_update_mongodb(new_rows):
 
             if len(fields) == 4 and fields[0] != "timestamp":  # Skip header row
                 try:
-                    time_stamp, temperature, humidity, moisture = fields
+                    timestamp, temperature, humidity, moisture = fields
                     data_list.append({
                         "email": USER_EMAIL,  # Attach email to each row
-                        "time": time_stamp,
+                        "timestamp": timestamp,
                         "temperature": float(temperature),  # Convert to float
                         "humidity": float(humidity),
                         "moisture": float(moisture),
@@ -74,7 +74,7 @@ def insert_or_update_mongodb(new_rows):
 
         if data_list:
             for data in data_list:
-                # Find document by email only (ignore the 'time' field)
+                # Find document by email only (ignore the 'timestamp' field)
                 existing_doc = collection.find_one({"email": data["email"]})
 
                 if existing_doc:
@@ -86,7 +86,7 @@ def insert_or_update_mongodb(new_rows):
                     collection.update_one(
                         {"_id": existing_doc["_id"]},  # Match by _id of the existing document
                         {"$set": {
-                            "time": data["time"],
+                            "timestamp": data["timestamp"],
                             "temperature": data["temperature"],
                             "humidity": data["humidity"],
                             "moisture": data["moisture"],
@@ -98,7 +98,7 @@ def insert_or_update_mongodb(new_rows):
                     collection.insert_one({
                         **data,
                         "history": [{
-                            "time": data["time"],
+                            "timestamp": data["timestamp"],
                             "temperature": data["temperature"],
                             "humidity": data["humidity"],
                             "moisture": data["moisture"],

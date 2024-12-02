@@ -47,7 +47,7 @@ def format_and_print_data(data):
 def update_history(existing_doc, new_data):
     history = existing_doc.get("history", [])
     history.insert(0, {
-        "time": new_data["time"],
+        "timestamp": new_data["timestamp"],  # Updated to "timestamp"
         "temperature": new_data["temperature"],
         "humidity": new_data["humidity"],
         "moisture": new_data["moisture"],
@@ -67,10 +67,10 @@ def insert_or_update_mongodb(new_rows):
             fields = row.strip().split(",")
             if len(fields) == 4 and fields[0] != "timestamp":
                 try:
-                    time_stamp, temperature, humidity, moisture = fields
+                    timestamp, temperature, humidity, moisture = fields  # Updated variable name to "timestamp"
                     data_list.append({
                         "email": USER_EMAIL,
-                        "time": time_stamp,
+                        "timestamp": timestamp,  # Updated to "timestamp"
                         "temperature": float(temperature),
                         "humidity": float(humidity),
                         "moisture": float(moisture),
@@ -86,7 +86,7 @@ def insert_or_update_mongodb(new_rows):
                 collection.update_one(
                     {"_id": existing_doc["_id"]},
                     {"$set": {
-                        "time": data["time"],
+                        "timestamp": data["timestamp"],  # Updated to "timestamp"
                         "temperature": data["temperature"],
                         "humidity": data["humidity"],
                         "moisture": data["moisture"],
@@ -97,7 +97,7 @@ def insert_or_update_mongodb(new_rows):
                 collection.insert_one({
                     **data,
                     "history": [{
-                        "time": data["time"],
+                        "timestamp": data["timestamp"],  # Updated to "timestamp"
                         "temperature": data["temperature"],
                         "humidity": data["humidity"],
                         "moisture": data["moisture"],
