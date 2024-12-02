@@ -1,28 +1,40 @@
-//routes/get.js
+// routes/get.js
 
-const fs = require("fs");
-const path = require("path");
-const csvParser = require("csv-parser");
+const { MongoClient } = require("mongodb");
 
-/**
- *  Send the sensor data to UI application
- */
-module.exports = (req, res) => {
-  const filePath = path.join(__dirname, "../data/sensor_data.csv");
-  const results = [];
+// MongoDB connection URI and database/collection name
+const MONGO_URI = "mongodb+srv://Victor:7OkL03vI5PTE9FlJ@lentil.1fev0.mongodb.net/prj666_data_sense";
+const DB_NAME = "prj666_datasense";
+const COLLECTION_NAME = "users";
 
-  fs.createReadStream(filePath)
-    .pipe(csvParser())
-    .on("data", (data) => {
-      results.push(data);
-    })
-    .on("end", () => {
-      console.log("result", results.length, results);
-      res.status(200).json(results);
-    })
-    .on("error", (err) => {
-      res
-        .status(500)
-        .json({ message: "Unable to read sensor data", error: err });
-    });
+// Function to retrieve user history from MongoDB
+async function getUserHistory(email) {
+  const client = new MongoClient(MONGO_URI, { useUnifiedTopology: true });
+  try {
+    await client.connect();
+    const collection = client.db(DB_NAME).collection(COLLECTION_NAME);
+
+    // Find user by email
+    const user = await collection.findOne({ email });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Return the 'history' field (ensure it's limited to 20 records in MongoDB)
+    return user.history || [];
+  } finally {
+    await client.close();
+  }
+}
+
+module.exports = async (req, res) => {
+  const email = req.query.email || "test123@abc.com" ; // Default email if none provided
+  try {
+    const history = await getUserHistory(email);
+    res.status(200).json(history);
+  } catch (error) {
+    console.error("Error fetching user history:", error.message);
+    res.status(500).json({ message: "Failed to fetch user history", error: error.message });
+  }
 };

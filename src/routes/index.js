@@ -18,6 +18,7 @@ router.use("/users", require("./usersRouter"));
 // Link routes to route handlers
 router.post("/sensor-data", require("./post"));
 router.get("/sensor-data", require("./get"));
+router.get("/sensor-data", require("./getcsv"));
 
 // Import your new upload route
 router.post("/upload/sensor-data", require("./sensorDataRouter"));

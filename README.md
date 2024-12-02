@@ -9,3 +9,13 @@
 - npm install dovenv
 - npm install google-auth-library
 - pip install pymongo
+
+## 01Dec24
+- Add RpiPico_MongoDB.py combination
+- Require Wifi Hotspot (maximize compatibility - same name and password)
+- use Thonny run wifi_local_dht11_moisture.py from Rpi to .csv
+- .csv any updates connection to MongoDB
+
+## 01Dec24
+- getcsv.js [get csv file]
+- get.js [MongoDB]
