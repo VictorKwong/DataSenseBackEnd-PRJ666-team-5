@@ -20,3 +20,6 @@
 ## 01Dec24
 - getcsv.js [get csv file]
 - get.js [MongoDB]
+
+## 02Dec24
+- connection status update (history.0.isConnected)

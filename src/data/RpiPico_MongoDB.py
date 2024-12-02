@@ -4,6 +4,7 @@ import os
 import json
 import time
 from datetime import datetime, timezone
+from threading import Thread
 import pymongo
 from pymongo import MongoClient
 
@@ -14,7 +15,7 @@ CSV_FILE = "./src/data/sensor_data.csv"
 MONGO_URI = "mongodb+srv://Victor:7OkL03vI5PTE9FlJ@lentil.1fev0.mongodb.net/prj666_data_sense"
 DB_NAME = "prj666_datasense"
 COLLECTION_NAME = "users"
-USER_EMAIL = "test123@abc.com"  # Default email for sensor data
+USER_EMAIL = "test123@abc.com"  # Default email for sensor data test999@gmail.com
 
 # MongoDB setup
 client = MongoClient(MONGO_URI)
@@ -44,13 +45,14 @@ def format_and_print_data(data):
     print(f'{data["timestamp"]},{data["temperature"]},{data["humidity"]},{data["moisture"]}')
 
 # Helper function to maintain the History field with a maximum of 20 records
-def update_history(existing_doc, new_data):
+def update_history(existing_doc, new_data, is_connected):
     history = existing_doc.get("history", [])
     history.insert(0, {
-        "timestamp": new_data["timestamp"],  # Updated to "timestamp"
+        "timestamp": new_data["timestamp"],
         "temperature": new_data["temperature"],
         "humidity": new_data["humidity"],
         "moisture": new_data["moisture"],
+        "isConnected": is_connected,  # Add isConnected to history
     })
     if len(history) > 20:
         history.pop()  # Remove the oldest record
@@ -67,10 +69,10 @@ def insert_or_update_mongodb(new_rows):
             fields = row.strip().split(",")
             if len(fields) == 4 and fields[0] != "timestamp":
                 try:
-                    timestamp, temperature, humidity, moisture = fields  # Updated variable name to "timestamp"
+                    timestamp, temperature, humidity, moisture = fields
                     data_list.append({
                         "email": USER_EMAIL,
-                        "timestamp": timestamp,  # Updated to "timestamp"
+                        "timestamp": timestamp,
                         "temperature": float(temperature),
                         "humidity": float(humidity),
                         "moisture": float(moisture),
@@ -82,11 +84,11 @@ def insert_or_update_mongodb(new_rows):
             existing_doc = collection.find_one({"email": data["email"]})
             if existing_doc:
                 print(f"Found existing entry for email {data['email']}. Updating.")
-                update_history(existing_doc, data)
+                update_history(existing_doc, data, is_connected=True)  # Pass isConnected as True
                 collection.update_one(
                     {"_id": existing_doc["_id"]},
                     {"$set": {
-                        "timestamp": data["timestamp"],  # Updated to "timestamp"
+                        "timestamp": data["timestamp"],
                         "temperature": data["temperature"],
                         "humidity": data["humidity"],
                         "moisture": data["moisture"],
@@ -97,11 +99,13 @@ def insert_or_update_mongodb(new_rows):
                 collection.insert_one({
                     **data,
                     "history": [{
-                        "timestamp": data["timestamp"],  # Updated to "timestamp"
+                        "timestamp": data["timestamp"],
                         "temperature": data["temperature"],
                         "humidity": data["humidity"],
                         "moisture": data["moisture"],
-                    }]
+                        "isConnected": True,  # Include isConnected in the first history record
+                    }],
+                    "isConnected": True  # Initial connection status for the user
                 })
 
     except Exception as e:
@@ -109,8 +113,8 @@ def insert_or_update_mongodb(new_rows):
 
 # Function to monitor the CSV file and upload to MongoDB
 def monitor_and_upload():
-    global last_uploaded_line
-    while True:
+    global last_uploaded_line, running
+    while running:
         try:
             with open(CSV_FILE, "r") as file:
                 lines = file.readlines()
@@ -124,15 +128,51 @@ def monitor_and_upload():
             print(f"Error reading CSV file: {e}")
         time.sleep(15)
 
+# Function to update the connection status in MongoDB
+def update_connection_status(status):
+    try:
+        # Find the document by email
+        existing_doc = collection.find_one({"email": USER_EMAIL})
+        
+        if existing_doc:
+            # Update the isConnected field in the first history entry
+            # Using $set to update the first element in the history array
+            collection.update_one(
+                {"email": USER_EMAIL},
+                {
+                    "$set": {
+                        "history.0.isConnected": status  # Update the first entry's isConnected in history
+                    }
+                }
+            )
+            print(f"Connection status in history updated to {status}")
+        else:
+            print("User not found in the database.")
+            
+    except Exception as e:
+        print(f"Error updating connection status in history: {e}")
+
+# Function to listen for 'q' input to quit the program
+def monitor_exit():
+    global running
+    while running:
+        user_input = input("Press 'q' and Enter to quit: ").strip().lower()
+        if user_input == 'q':
+            running = False
+            update_connection_status(False)  # Set connection to False before exiting
+            print("Exiting program...")
+            os._exit(0)  # Forcefully exit all threads
+
 # Function to start the server
 def start_server():
+    update_connection_status(True)  # Set connection to True when the server starts
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.bind((SERVER_IP, SERVER_PORT))
         server_socket.listen(5)
         print(f"Server started. Listening on {SERVER_IP}:{SERVER_PORT}")
 
-        while True:
+        while running:  # Check if the script is still running
             client_socket, client_address = server_socket.accept()
             print(f"Connection received from {client_address}")
 
@@ -151,11 +191,18 @@ def start_server():
     except Exception as e:
         print(f"Error starting server: {e}")
     finally:
+        update_connection_status(False)  # Set connection to False if the server stops
         server_socket.close()
 
-# Run both server and monitor in parallel
-from threading import Thread
-
+# Main entry point
 if __name__ == "__main__":
-    Thread(target=start_server).start()
-    Thread(target=monitor_and_upload).start()
+    running = True  # Global variable to manage program state
+
+    try:
+        Thread(target=start_server).start()
+        Thread(target=monitor_and_upload).start()
+        Thread(target=monitor_exit).start()
+    except KeyboardInterrupt:
+        running = False
+        update_connection_status(False)
+        print("Program interrupted and exited.")
